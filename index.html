@@ -1,93 +1,154 @@
-<!DOCTYPE html>
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shape of My Heart - Player</title>
+    <title>Shape of My Heart - Karaoke Style</title>
     <style>
         body {
             background: #0f0c29;
-            background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
+            background: linear-gradient(to bottom, #1a0a33, #302b63, #0f0c29);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
             margin: 0;
         }
 
-        .container {
-            text-align: center;
-            width: 80%;
-            max-width: 500px;
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
 
-        h1 { font-size: 1.5rem; margin-bottom: 5px; color: #fff; }
-        p.artist { color: #ccc; margin-bottom: 30px; }
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            padding: 50px 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
+        .theme-icons {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 15px;
+            filter: drop-shadow(0 0 10px white);
+        }
+
+        h1 { font-size: 1.8rem; margin: 10px 0; }
+        p.artist { color: #aaa; margin-bottom: 40px; }
+
+        /* Gaya Lirik Satu Per Satu */
         #lyrics-container {
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            font-style: italic;
-            transition: all 0.5s ease;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            min-height: 150px;
+            font-size: 1.5rem;
+            line-height: 1.6;
+            perspective: 1000px;
+        }
+
+        .word {
+            display: inline-block;
+            margin-right: 10px;
+            opacity: 0;
+            transform: translateY(20px) rotateX(-90deg);
+            animation: revealWord 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        @keyframes revealWord {
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
         }
 
         .controls { margin-top: 40px; }
 
         button {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            color: white;
-            padding: 15px 30px;
+            background: white;
+            border: none;
+            color: #0f0c29;
+            padding: 15px 45px;
             border-radius: 50px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
             transition: 0.3s;
         }
 
         button:hover {
-            background: white;
-            color: #0f0c29;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Shape of My Heart</h1>
-    <p class="artist">Sting</p>
+    <canvas id="particleCanvas"></canvas>
 
-    <div id="lyrics-container">Tekan Play untuk mula...</div>
+    <div class="container">
+        <div class="theme-icons">♠️ ♣️ ♥️ ♦️</div>
+        <h1>Shape of My Heart</h1>
+        <p class="artist">Sting</p>
 
-    <div class="controls">
-        <button id="playBtn">Mainkan Lagu ✨</button>
+        <div id="lyrics-container">
+            <span style="opacity: 0.5; font-style: italic;">Sedia? Klik butang di bawah...</span>
+        </div>
+
+        <div class="controls">
+            <button id="playBtn">Mainkan Lagu ✨</button>
+        </div>
+
+        <!-- Masukkan fail lagu anda di sini -->
+        <audio id="myAudio" src="sting.mp3"></audio>
     </div>
-
-  <audio id="myAudio" src="shapeofmyheart.mp3"></audio>
-</div>
 
 <script>
     const audio = document.getElementById('myAudio');
     const playBtn = document.getElementById('playBtn');
     const lyricsDisplay = document.getElementById('lyrics-container');
 
-    // Data lirik mengikut saat (saat: lirik)
-    const lyrics = [
-        { time: 0, text: "He deals the cards as a meditation..." },
-        { time: 6, text: "And those he plays never suspect..." },
-        { time: 12, text: "He doesn't play for the money he wins..." },
-        { time: 18, text: "He don't play for respect..." },
-        { time: 24, text: "I know that the spades are the swords of a soldier..." },
-        { time: 30, text: "I know that the clubs are weapons of war..." },
-        { time: 36, text: "I know that diamonds mean money for this art..." },
-        { time: 42, text: "But that's not the shape of my heart..." }
+    // Data lirik perkataan demi perkataan (Masa dalam saat)
+    // Anda boleh tambah atau adjust masa ini mengikut tempo lagu
+    const lyricsData = [
+        { time: 5.0, text: "He", clear: true },
+        { time: 5.4, text: "deals" },
+        { time: 5.8, text: "the" },
+        { time: 6.2, text: "cards" },
+        { time: 7.0, text: "as" },
+        { time: 7.3, text: "a" },
+        { time: 7.8, text: "meditation..." },
+        
+        { time: 10.5, text: "And", clear: true },
+        { time: 10.9, text: "those" },
+        { time: 11.3, text: "he" },
+        { time: 11.7, text: "plays" },
+        { time: 12.5, text: "never" },
+        { time: 13.0, text: "suspect..." },
+
+        { time: 16.0, text: "But", clear: true },
+        { time: 16.4, text: "that's" },
+        { time: 16.8, text: "not" },
+        { time: 17.2, text: "the" },
+        { time: 17.8, text: "shape" },
+        { time: 18.2, text: "of" },
+        { time: 18.5, text: "my" },
+        { time: 19.0, text: "heart..." }
     ];
+
+    let lastIndex = -1;
 
     playBtn.addEventListener('click', () => {
         if (audio.paused) {
@@ -99,16 +160,66 @@
         }
     });
 
-    // Kemaskini lirik berdasarkan masa lagu
     audio.addEventListener('timeupdate', () => {
         const currentTime = audio.currentTime;
-        const currentLyric = lyrics.findLast(l => currentTime >= l.time);
         
-        if (currentLyric) {
-            lyricsDisplay.innerText = currentLyric.text;
+        // Cari perkataan yang patut muncul
+        const currentIndex = lyricsData.findIndex((l, i) => {
+            return currentTime >= l.time && (lyricsData[i+1] ? currentTime < lyricsData[i+1].time : true);
+        });
+
+        if (currentIndex !== -1 && currentIndex !== lastIndex) {
+            // Jika ada tanda 'clear', kosongkan skrin untuk baris baru
+            if (lyricsData[currentIndex].clear) {
+                lyricsDisplay.innerHTML = "";
+            }
+
+            const span = document.createElement('span');
+            span.classList.add('word');
+            span.innerText = lyricsData[currentIndex].text;
+            lyricsDisplay.appendChild(span);
+            
+            lastIndex = currentIndex;
         }
     });
-</script>
 
+    // --- LOGIK BACKGROUND PARTICLES ---
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height + canvas.height;
+            this.size = Math.random() * 3 + 1;
+            this.speedY = Math.random() * -1 - 0.5;
+            this.opacity = Math.random() * 0.5 + 0.1;
+        }
+        update() {
+            this.y += this.speedY;
+            if (this.y < -10) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    const particles = Array.from({ length: 70 }, () => new Particle());
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+    animate();
+</script>
 </body>
 </html>
