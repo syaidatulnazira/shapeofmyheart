@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape of My Heart - Player</title>
+    <style>
+        body {
+            background: #0f0c29;
+            background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        h1 { font-size: 1.5rem; margin-bottom: 5px; color: #fff; }
+        p.artist { color: #ccc; margin-bottom: 30px; }
+
+        #lyrics-container {
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-style: italic;
+            transition: all 0.5s ease;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .controls { margin-top: 40px; }
+
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: white;
+            color: #0f0c29;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Shape of My Heart</h1>
+    <p class="artist">Sting</p>
+
+    <div id="lyrics-container">Tekan Play untuk mula...</div>
+
+    <div class="controls">
+        <button id="playBtn">Mainkan Lagu ✨</button>
+    </div>
+
+  <audio id="myAudio" src="shapeofmyheart.mp3"></audio>
+</div>
+
+<script>
+    const audio = document.getElementById('myAudio');
+    const playBtn = document.getElementById('playBtn');
+    const lyricsDisplay = document.getElementById('lyrics-container');
+
+    // Data lirik mengikut saat (saat: lirik)
+    const lyrics = [
+        { time: 0, text: "He deals the cards as a meditation..." },
+        { time: 6, text: "And those he plays never suspect..." },
+        { time: 12, text: "He doesn't play for the money he wins..." },
+        { time: 18, text: "He don't play for respect..." },
+        { time: 24, text: "I know that the spades are the swords of a soldier..." },
+        { time: 30, text: "I know that the clubs are weapons of war..." },
+        { time: 36, text: "I know that diamonds mean money for this art..." },
+        { time: 42, text: "But that's not the shape of my heart..." }
+    ];
+
+    playBtn.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play();
+            playBtn.innerText = "Pause ⏸️";
+        } else {
+            audio.pause();
+            playBtn.innerText = "Mainkan Lagu ✨";
+        }
+    });
+
+    // Kemaskini lirik berdasarkan masa lagu
+    audio.addEventListener('timeupdate', () => {
+        const currentTime = audio.currentTime;
+        const currentLyric = lyrics.findLast(l => currentTime >= l.time);
+        
+        if (currentLyric) {
+            lyricsDisplay.innerText = currentLyric.text;
+        }
+    });
+</script>
+
+</body>
+</html>
