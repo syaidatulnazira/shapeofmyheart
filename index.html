@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shape of My Heart - Karaoke Style</title>
+    <title>Dynamic Player - Backstreet Boys</title>
     <style>
+        /* Gaya Asas & Latar Belakang Gradient */
         body {
-            background: #0f0c29;
-            background: linear-gradient(to bottom, #1a0a33, #302b63, #0f0c29);
-            height: 100vh;
+            margin: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
+            height: 100vh;
+            background: radial-gradient(circle at center, #2e1a4f, #1a0a2e, #0a0514);
             font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            margin: 0;
+            color: white;
         }
 
-        #particleCanvas {
+        /* Canvas untuk Animasi Visualizer */
+        #visualizerCanvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -27,200 +28,312 @@
             z-index: 1;
         }
 
-        .container {
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
+        /* Bekas Utama Glassmorphism (Kesan Kaca) */
+        .glass-player {
             position: relative;
             z-index: 2;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            padding: 50px 30px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 90%;
+            max-width: 650px;
+            padding: 50px 40px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
         }
 
-        .theme-icons {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            letter-spacing: 15px;
-            filter: drop-shadow(0 0 10px white);
+        .glass-player:hover {
+            transform: translateY(-5px);
         }
 
-        h1 { font-size: 1.8rem; margin: 10px 0; }
-        p.artist { color: #aaa; margin-bottom: 40px; }
+        /* Tajuk & Artis */
+        .header h1 {
+            font-size: 2.2rem;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
 
-        /* Gaya Lirik Satu Per Satu */
-        #lyrics-container {
-            min-height: 150px;
-            font-size: 1.5rem;
-            line-height: 1.6;
+        .header p.artist {
+            color: #ffb3d9;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin: 0 0 50px 0;
+            font-weight: 300;
+        }
+
+        /* Bekas Lirik */
+        #lyrics-display {
+            min-height: 130px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 600;
             perspective: 1000px;
         }
 
+        /* Animasi Lirik Keluar */
         .word {
             display: inline-block;
-            margin-right: 10px;
+            margin: 6px 10px;
             opacity: 0;
-            transform: translateY(20px) rotateX(-90deg);
-            animation: revealWord 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            transform: translateY(20px) scale(0.8);
+            filter: blur(8px);
+            animation: textReveal 0.6s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
         }
 
-        @keyframes revealWord {
+        @keyframes textReveal {
             to {
                 opacity: 1;
-                transform: translateY(0) rotateX(0);
+                transform: translateY(0) scale(1);
+                filter: blur(0);
             }
         }
 
-        .controls { margin-top: 40px; }
-
-        button {
-            background: white;
-            border: none;
-            color: #0f0c29;
-            padding: 15px 45px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: 0.3s;
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
         }
 
-        button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+        #progress {
+            flex-grow: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to right, #ff4d94, #ffb3d9);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 77, 148, 0.8);
+            transition: width 0.1s linear;
+        }
+
+        /* Kawalan Butang */
+        .controls {
+            margin-top: 30px;
+        }
+
+        #playBtn {
+            background: rgba(255, 77, 148, 0.9);
+            border: none;
+            color: white;
+            padding: 18px 55px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(255, 77, 148, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            gap: 10px;
+        }
+
+        #playBtn:hover {
+            background: #ff1a75;
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 77, 148, 0.6);
         }
     </style>
 </head>
 <body>
 
-    <canvas id="particleCanvas"></canvas>
+    <!-- Canvas untuk Melukis Visualizer Dinamik -->
+    <canvas id="visualizerCanvas"></canvas>
 
-    <div class="container">
-        <div class="theme-icons">♠️ ♣️ ♥️ ♦️</div>
-        <h1>Shape of My Heart</h1>
-        <p class="artist">Sting</p>
+    <!-- Pemain Glassmorphism -->
+    <div class="glass-player">
+        <div class="header">
+            <h1>Shape of My Heart</h1>
+            <p class="artist">Backstreet Boys</p>
+        </div>
 
-        <div id="lyrics-container">
-            <span style="opacity: 0.5; font-style: italic;">Sedia? Klik butang di bawah...</span>
+        <!-- Tempat Lirik Dipaparkan -->
+        <div id="lyrics-display">
+            <span style="opacity: 0.5; font-style: italic; font-size: 1.1rem;">Tekan Play untuk mulakan animasi ✨</span>
+        </div>
+
+        <!-- Progress Bar & Masa -->
+        <div class="progress-container">
+            <span id="current-time">0:00</span>
+            <div id="progress">
+                <div id="progress-bar"></div>
+            </div>
+            <span id="total-time">3:51</span>
         </div>
 
         <div class="controls">
-            <button id="playBtn">Mainkan Lagu ✨</button>
+            <button id="playBtn">▶ Mainkan Lagu</button>
         </div>
 
-        <!-- Masukkan fail lagu anda di sini -->
+        <!-- Fail Audio -->
         <audio id="myAudio" src="shapeofmyheart.mp3"></audio>
     </div>
 
 <script>
     const audio = document.getElementById('myAudio');
     const playBtn = document.getElementById('playBtn');
-    const lyricsDisplay = document.getElementById('lyrics-container');
+    const lyricsDisplay = document.getElementById('lyrics-display');
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalTimeEl = document.getElementById('total-time');
 
-    // Data lirik perkataan demi perkataan (Masa dalam saat)
-    // Anda boleh tambah atau adjust masa ini mengikut tempo lagu
+    // --- Data Lirik (Masa dalam Saat) ---
     const lyricsData = [
-        { time: 5.0, text: "He", clear: true },
-        { time: 5.4, text: "deals" },
-        { time: 5.8, text: "the" },
-        { time: 6.2, text: "cards" },
-        { time: 7.0, text: "as" },
-        { time: 7.3, text: "a" },
-        { time: 7.8, text: "meditation..." },
-        
-        { time: 10.5, text: "And", clear: true },
-        { time: 10.9, text: "those" },
-        { time: 11.3, text: "he" },
-        { time: 11.7, text: "plays" },
-        { time: 12.5, text: "never" },
-        { time: 13.0, text: "suspect..." },
-
-        { time: 16.0, text: "But", clear: true },
-        { time: 16.4, text: "that's" },
-        { time: 16.8, text: "not" },
-        { time: 17.2, text: "the" },
-        { time: 17.8, text: "shape" },
-        { time: 18.2, text: "of" },
-        { time: 18.5, text: "my" },
-        { time: 19.0, text: "heart..." }
+        { time: 10.0, text: "Baby,", clear: true }, { time: 10.5, text: "please" }, { time: 11.2, text: "try" },
+        { time: 11.8, text: "to" }, { time: 12.2, text: "forgive" }, { time: 13.0, text: "me..." },
+        { time: 15.5, text: "Stay", clear: true }, { time: 16.0, text: "here," }, { time: 16.5, text: "don't" },
+        { time: 17.0, text: "let" }, { time: 17.5, text: "me" }, { time: 18.0, text: "go..." },
+        { time: 22.0, text: "I'm", clear: true }, { time: 22.5, text: "here" }, { time: 23.0, text: "with" },
+        { time: 23.5, text: "all" }, { time: 24.0, text: "my" }, { time: 24.5, text: "heart" },
+        { time: 25.0, text: "for" }, { time: 25.5, text: "you..." },
+        { time: 28.5, text: "But", clear: true }, { time: 29.0, text: "that's" }, { time: 29.5, text: "not" },
+        { time: 30.0, text: "the" }, { time: 30.8, text: "shape" }, { time: 31.5, text: "of" },
+        { time: 32.0, text: "my" }, { time: 32.5, text: "heart..." }
     ];
 
     let lastIndex = -1;
+    let audioContext, analyser, source, bufferLength, dataArray;
 
+    // --- Inisialisasi Web Audio API (Hanya bila Play ditekan) ---
+    function initAudioAnalyzer() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            source = audioContext.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            analyser.fftSize = 256; // Ketepatan analisis
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+        }
+    }
+
+    // --- Logik Utama Play/Pause & Masa ---
     playBtn.addEventListener('click', () => {
+        initAudioAnalyzer();
         if (audio.paused) {
-            audio.play();
-            playBtn.innerText = "Pause ⏸️";
+            audio.play().catch(() => alert("Pastikan ada fail 'lagu.mp3' dalam folder!"));
+            playBtn.innerHTML = "⏸️ Pause";
         } else {
             audio.pause();
-            playBtn.innerText = "Mainkan Lagu ✨";
+            playBtn.innerHTML = "▶ Mainkan Lagu";
         }
     });
 
     audio.addEventListener('timeupdate', () => {
         const currentTime = audio.currentTime;
-        
-        // Cari perkataan yang patut muncul
+        const duration = audio.duration;
+
+        // Kemaskini Progress Bar & Masa
+        if (duration) {
+            progressBar.style.width = `${(currentTime / duration) * 100}%`;
+            currentTimeEl.innerText = formatTime(currentTime);
+        }
+
+        // Kemaskini Lirik
         const currentIndex = lyricsData.findIndex((l, i) => {
             return currentTime >= l.time && (lyricsData[i+1] ? currentTime < lyricsData[i+1].time : true);
         });
 
         if (currentIndex !== -1 && currentIndex !== lastIndex) {
-            // Jika ada tanda 'clear', kosongkan skrin untuk baris baru
-            if (lyricsData[currentIndex].clear) {
-                lyricsDisplay.innerHTML = "";
-            }
-
+            if (lyricsData[currentIndex].clear) lyricsDisplay.innerHTML = "";
             const span = document.createElement('span');
             span.classList.add('word');
             span.innerText = lyricsData[currentIndex].text;
             lyricsDisplay.appendChild(span);
-            
             lastIndex = currentIndex;
         }
     });
 
-    // --- LOGIK BACKGROUND PARTICLES ---
-    const canvas = document.getElementById('particleCanvas');
+    // Menunjukkan durasi penuh bila lagu dimuatkan
+    audio.addEventListener('loadedmetadata', () => { totalTimeEl.innerText = formatTime(audio.duration); });
+
+    function formatTime(seconds) {
+        const min = Math.floor(seconds / 60);
+        const sec = Math.floor(seconds % 60);
+        return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+    }
+
+    // --- LOGIK VISUALIZER DINAMIK (DANCING PARTICLES) ---
+    const canvas = document.getElementById('visualizerCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     class Particle {
-        constructor() {
-            this.reset();
+        constructor(x, y) {
+            this.x = x; this.y = y; this.baseX = x; this.baseY = y;
+            this.size = Math.random() * 2 + 1;
+            this.opacity = Math.random();
+            this.speedFactor = Math.random() * 0.1 + 0.05;
         }
-        reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height + canvas.height;
-            this.size = Math.random() * 3 + 1;
-            this.speedY = Math.random() * -1 - 0.5;
-            this.opacity = Math.random() * 0.5 + 0.1;
-        }
-        update() {
-            this.y += this.speedY;
-            if (this.y < -10) this.reset();
+        update(audioStrength) {
+            // Zarah bergerak rawak sikit, tapi akan kuat bila 'audioStrength' (bass) tinggi
+            let movement = audioStrength * this.speedFactor;
+            this.x = this.baseX + (Math.random() - 0.5) * movement * 10;
+            this.y = this.baseY + (Math.random() - 0.5) * movement * 10;
+            this.opacity = audioStrength / 255; // Lebih cerah bila audio kuat
         }
         draw() {
-            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = `rgba(255, 179, 217, ${this.opacity})`; // Pink
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
         }
     }
 
-    const particles = Array.from({ length: 70 }, () => new Particle());
+    const particles = [];
+    // Cipta zarah dalam bentuk jantung besar
+    for (let i = 0; i < Math.PI * 2; i += 0.08) {
+        let r = 18;
+        let x = r * 16 * Math.sin(i) ** 3 + canvas.width / 2;
+        let y = -r * (13 * Math.cos(i) - 5 * Math.cos(2*i) - 2 * Math.cos(3*i) - Math.cos(4*i)) + canvas.height / 2 - 50;
+        particles.push(new Particle(x, y));
+    }
+    // Tambah zarah rawak di latar belakang
+    for (let i = 0; i < 80; i++) {
+        particles.push(new Particle(Math.random()*canvas.width, Math.random()*canvas.height));
+    }
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => { p.update(); p.draw(); });
+        
+        let avgAudioStrength = 0;
+        if (analyser) {
+            analyser.getByteFrequencyData(dataArray);
+            avgAudioStrength = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+        }
+
+        particles.forEach(p => {
+            p.update(avgAudioStrength);
+            p.draw();
+        });
+
         requestAnimationFrame(animate);
     }
     animate();
+
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 </script>
 </body>
 </html>
